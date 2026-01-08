@@ -1,6 +1,6 @@
 ---
 title: "webnovel"
-author: "Federico Pianzola"
+author: "author"
 format: pdf
 editor: visual
 ---
