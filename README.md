@@ -18,4 +18,4 @@ There are 2 folders in **scripts** that include the finetuning and the classific
     
 - **synthetic_data_eval**: Contains the notebook for synthetic data quality evaluation
 
-**GAM_webnovels_stats_20260107.qmd** is the R markdown file for the GAM statistical analysis
+**GAM** is the R markdown file for the GAM statistical analysis
