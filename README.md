@@ -1,5 +1,6 @@
-**JCLS 2026 paper "Echoes of Emotion: Linking Narrative and Reader Response of Web Novels in Chinese and English"
-Code and data for the 2026 JCLS submission on review composition.**
+**JCLS 2026 paper "Echoes of Emotion: Linking Narrative and Reader Response of Web Novels in Chinese and English"**
+
+**Code and data for the 2026 JCLS submission on review composition.**
 
 There are 2 folders in **scripts** that include the finetuning and the classification task.
 
