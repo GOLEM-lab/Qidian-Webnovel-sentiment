@@ -1,0 +1,343 @@
+Loading required package: nlme
+This is mgcv 1.9-4. For overview type '?mgcv'.
+Rows: 695154 Columns: 19
+── Column specification ────────────────────────────────────────────────────────
+Delimiter: ","
+chr  (2): source, paragraphId
+dbl (17): bookId, new_index, chapter_index, paragraph_index, percentage_inde...
+
+ℹ Use `spec()` to retrieve the full column specification for this data.
+ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.
+
+Family: gaussian 
+Link function: identity 
+
+Formula:
+comm_sentiment_roll_51 ~ s(par_sentiment_roll_51)
+
+Parametric coefficients:
+              Estimate Std. Error t value Pr(>|t|)    
+(Intercept) -0.0423041  0.0005046  -83.84   <2e-16 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Approximate significance of smooth terms:
+                          edf Ref.df     F p-value    
+s(par_sentiment_roll_51) 8.66  8.961 175.1  <2e-16 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+R-sq.(adj) =  0.00719   Deviance explained = 0.723%
+-ML =  -6299  Scale est. = 0.055236  n = 216960
+
+Family: gaussian 
+Link function: identity 
+
+Formula:
+comm_sentiment_roll_51 ~ s(par_sentiment_roll_51) + s(percentage_index)
+
+Parametric coefficients:
+             Estimate Std. Error t value Pr(>|t|)    
+(Intercept) -0.042304   0.000502  -84.26   <2e-16 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Approximate significance of smooth terms:
+                           edf Ref.df     F p-value    
+s(par_sentiment_roll_51) 8.627  8.954 181.9  <2e-16 ***
+s(percentage_index)      8.949  8.999 244.2  <2e-16 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+R-sq.(adj) =  0.0171   Deviance explained = 1.72%
+-ML = -7361.3  Scale est. = 0.054684  n = 216960
+
+Family: gaussian 
+Link function: identity 
+
+Formula:
+comm_sentiment_roll_51 ~ s(par_sentiment_roll_51) + s(percentage_index) + 
+    ti(par_sentiment_roll_51, percentage_index)
+
+Parametric coefficients:
+              Estimate Std. Error t value Pr(>|t|)    
+(Intercept) -0.0423816  0.0005033  -84.21   <2e-16 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Approximate significance of smooth terms:
+                                              edf Ref.df      F p-value    
+s(par_sentiment_roll_51)                    8.681  8.966 157.22  <2e-16 ***
+s(percentage_index)                         8.946  8.999 229.28  <2e-16 ***
+ti(par_sentiment_roll_51,percentage_index) 15.386 15.890  50.91  <2e-16 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+R-sq.(adj) =  0.0208   Deviance explained = 2.09%
+-ML = -7721.2  Scale est. = 0.054479  n = 216960
+
+Family: gaussian 
+Link function: identity 
+
+Formula:
+comm_sentiment_roll_51 ~ source + s(par_sentiment_roll_51) + 
+    s(percentage_index) + ti(par_sentiment_roll_51, percentage_index)
+
+Parametric coefficients:
+                 Estimate Std. Error t value Pr(>|t|)    
+(Intercept)    -0.0589578  0.0007447  -79.17   <2e-16 ***
+sourceWebNovel  0.0331356  0.0010991   30.15   <2e-16 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Approximate significance of smooth terms:
+                                              edf Ref.df      F p-value    
+s(par_sentiment_roll_51)                    8.682  8.966 164.35  <2e-16 ***
+s(percentage_index)                         8.946  8.999 232.28  <2e-16 ***
+ti(par_sentiment_roll_51,percentage_index) 15.397 15.896  48.53  <2e-16 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+R-sq.(adj) =  0.0249   Deviance explained =  2.5%
+-ML = -8174.7  Scale est. = 0.054252  n = 216960
+
+Family: gaussian 
+Link function: identity 
+
+Formula:
+comm_sentiment_roll_51 ~ source + s(par_sentiment_roll_51, by = source) + 
+    s(percentage_index, by = source) + ti(par_sentiment_roll_51, 
+    percentage_index, by = source)
+
+Parametric coefficients:
+                 Estimate Std. Error t value Pr(>|t|)    
+(Intercept)    -0.0600817  0.0007593  -79.13   <2e-16 ***
+sourceWebNovel  0.0297523  0.0019401   15.34   <2e-16 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Approximate significance of smooth terms:
+                                                             edf Ref.df      F
+s(par_sentiment_roll_51):sourceQidian                      8.419  8.897 228.77
+s(par_sentiment_roll_51):sourceWebNovel                    7.463  7.956  35.84
+s(percentage_index):sourceQidian                           8.867  8.994 106.35
+s(percentage_index):sourceWebNovel                         8.939  8.996  76.57
+ti(par_sentiment_roll_51,percentage_index):sourceQidian   14.424 15.371  45.77
+ti(par_sentiment_roll_51,percentage_index):sourceWebNovel 14.783 15.487  35.45
+                                                          p-value    
+s(par_sentiment_roll_51):sourceQidian                      <2e-16 ***
+s(par_sentiment_roll_51):sourceWebNovel                    <2e-16 ***
+s(percentage_index):sourceQidian                           <2e-16 ***
+s(percentage_index):sourceWebNovel                         <2e-16 ***
+ti(par_sentiment_roll_51,percentage_index):sourceQidian    <2e-16 ***
+ti(par_sentiment_roll_51,percentage_index):sourceWebNovel  <2e-16 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+R-sq.(adj) =  0.0341   Deviance explained = 3.44%
+-ML = -9123.9  Scale est. = 0.053739  n = 216960
+
+Family: gaussian 
+Link function: identity 
+
+Formula:
+comm_sentiment_roll_51 ~ source + s(par_sentiment_roll_51, by = source) + 
+    s(percentage_index, by = source) + ti(par_sentiment_roll_51, 
+    percentage_index, by = source) + s(bookId, bs = "re")
+
+Parametric coefficients:
+                Estimate Std. Error t value Pr(>|t|)    
+(Intercept)    -0.063660   0.010439  -6.098 1.07e-09 ***
+sourceWebNovel  0.028895   0.001692  17.078  < 2e-16 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Approximate significance of smooth terms:
+                                                             edf Ref.df      F
+s(par_sentiment_roll_51):sourceQidian                      8.545  8.935 161.86
+s(par_sentiment_roll_51):sourceWebNovel                    6.900  7.425  25.96
+s(percentage_index):sourceQidian                           8.860  8.994  71.43
+s(percentage_index):sourceWebNovel                         8.936  8.997  91.31
+ti(par_sentiment_roll_51,percentage_index):sourceQidian   14.181 15.170  43.38
+ti(par_sentiment_roll_51,percentage_index):sourceWebNovel 13.862 14.648  34.62
+s(bookId)                                                 87.676 89.000 306.30
+                                                          p-value    
+s(par_sentiment_roll_51):sourceQidian                      <2e-16 ***
+s(par_sentiment_roll_51):sourceWebNovel                    <2e-16 ***
+s(percentage_index):sourceQidian                           <2e-16 ***
+s(percentage_index):sourceWebNovel                         <2e-16 ***
+ti(par_sentiment_roll_51,percentage_index):sourceQidian    <2e-16 ***
+ti(par_sentiment_roll_51,percentage_index):sourceWebNovel  <2e-16 ***
+s(bookId)                                                  <2e-16 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+R-sq.(adj) =  0.142   Deviance explained = 14.2%
+-ML = -21717  Scale est. = 0.04775   n = 216960
+
+Method: ML   Optimizer: outer newton
+full convergence after 12 iterations.
+Gradient range [-0.0001731414,0.0001643897]
+(score -21717.03 & scale 0.04775037).
+Hessian positive definite, eigenvalue range [1.207273,108480].
+Model rank =  160 / 160 
+
+Basis dimension (k) checking results. Low p-value (k-index<1) may
+indicate that k is too low, especially if edf is close to k'.
+
+                                                             k'   edf k-index
+s(par_sentiment_roll_51):sourceQidian                      9.00  8.55    0.99
+s(par_sentiment_roll_51):sourceWebNovel                    9.00  6.90    0.99
+s(percentage_index):sourceQidian                           9.00  8.86    0.95
+s(percentage_index):sourceWebNovel                         9.00  8.94    0.95
+ti(par_sentiment_roll_51,percentage_index):sourceQidian   16.00 14.18    0.97
+ti(par_sentiment_roll_51,percentage_index):sourceWebNovel 16.00 13.86    0.97
+s(bookId)                                                 90.00 87.68      NA
+                                                          p-value    
+s(par_sentiment_roll_51):sourceQidian                        0.34    
+s(par_sentiment_roll_51):sourceWebNovel                      0.35    
+s(percentage_index):sourceQidian                           <2e-16 ***
+s(percentage_index):sourceWebNovel                         <2e-16 ***
+ti(par_sentiment_roll_51,percentage_index):sourceQidian      0.02 *  
+ti(par_sentiment_roll_51,percentage_index):sourceWebNovel  <2e-16 ***
+s(bookId)                                                      NA    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+
+mod1: comm_sentiment_roll_51 ~ s(par_sentiment_roll_51)
+
+mod2: comm_sentiment_roll_51 ~ s(par_sentiment_roll_51) + s(percentage_index)
+
+Chi-square test of ML scores
+-----
+  Model     Score Edf Difference    Df  p.value Sig.
+1  mod1 -6298.986   3                               
+2  mod2 -7361.260   5   1062.274 2.000  < 2e-16  ***
+
+AIC difference: 2170.87, model mod2 has lower AIC.
+
+mod2: comm_sentiment_roll_51 ~ s(par_sentiment_roll_51) + s(percentage_index)
+
+mod3: comm_sentiment_roll_51 ~ s(par_sentiment_roll_51) + s(percentage_index) + 
+    ti(par_sentiment_roll_51, percentage_index)
+
+Chi-square test of ML scores
+-----
+  Model     Score Edf Difference    Df  p.value Sig.
+1  mod2 -7361.260   5                               
+2  mod3 -7721.181   8    359.921 3.000  < 2e-16  ***
+
+AIC difference: 797.80, model mod3 has lower AIC.
+
+mod3: comm_sentiment_roll_51 ~ s(par_sentiment_roll_51) + s(percentage_index) + 
+    ti(par_sentiment_roll_51, percentage_index)
+
+mod4: comm_sentiment_roll_51 ~ source + s(par_sentiment_roll_51) + 
+    s(percentage_index) + ti(par_sentiment_roll_51, percentage_index)
+
+Chi-square test of ML scores
+-----
+  Model     Score Edf Difference    Df  p.value Sig.
+1  mod3 -7721.181   8                               
+2  mod4 -8174.679   9    453.498 1.000  < 2e-16  ***
+
+AIC difference: 905.17, model mod4 has lower AIC.
+
+mod4: comm_sentiment_roll_51 ~ source + s(par_sentiment_roll_51) + 
+    s(percentage_index) + ti(par_sentiment_roll_51, percentage_index)
+
+mod5: comm_sentiment_roll_51 ~ source + s(par_sentiment_roll_51, by = source) + 
+    s(percentage_index, by = source) + ti(par_sentiment_roll_51, 
+    percentage_index, by = source)
+
+Chi-square test of ML scores
+-----
+  Model     Score Edf Difference    Df  p.value Sig.
+1  mod4 -8174.679   9                               
+2  mod5 -9123.873  16    949.194 7.000  < 2e-16  ***
+
+AIC difference: 2030.36, model mod5 has lower AIC.
+
+mod5: comm_sentiment_roll_51 ~ source + s(par_sentiment_roll_51, by = source) + 
+    s(percentage_index, by = source) + ti(par_sentiment_roll_51, 
+    percentage_index, by = source)
+
+mod6: comm_sentiment_roll_51 ~ source + s(par_sentiment_roll_51, by = source) + 
+    s(percentage_index, by = source) + ti(par_sentiment_roll_51, 
+    percentage_index, by = source) + s(bookId, bs = "re")
+
+Chi-square test of ML scores
+-----
+  Model      Score Edf Difference    Df  p.value Sig.
+1  mod5  -9123.873  16                               
+2  mod6 -21717.033  17  12593.160 1.000  < 2e-16  ***
+
+AIC difference: 25547.79, model mod6 has lower AIC.
+
+Family: gaussian 
+Link function: identity 
+
+Formula:
+comm_sentiment_roll_51 ~ source + s(par_sentiment_roll_51, by = source) + 
+    s(percentage_index, by = source) + ti(par_sentiment_roll_51, 
+    percentage_index, by = source) + s(bookId, bs = "re")
+
+Parametric coefficients:
+                Estimate Std. Error t value Pr(>|t|)    
+(Intercept)    -0.063667   0.010498  -6.065 1.32e-09 ***
+sourceWebNovel  0.028899   0.001739  16.620  < 2e-16 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Approximate significance of smooth terms:
+                                                             edf Ref.df      F
+s(par_sentiment_roll_51):sourceQidian                      8.555  8.938 161.76
+s(par_sentiment_roll_51):sourceWebNovel                    7.066  7.576  26.14
+s(percentage_index):sourceQidian                           8.860  8.994  71.44
+s(percentage_index):sourceWebNovel                         8.935  8.997  90.52
+ti(par_sentiment_roll_51,percentage_index):sourceQidian   14.204 15.184  43.36
+ti(par_sentiment_roll_51,percentage_index):sourceWebNovel 14.079 14.824  34.61
+s(bookId)                                                 87.690 89.000 306.29
+                                                          p-value    
+s(par_sentiment_roll_51):sourceQidian                      <2e-16 ***
+s(par_sentiment_roll_51):sourceWebNovel                    <2e-16 ***
+s(percentage_index):sourceQidian                           <2e-16 ***
+s(percentage_index):sourceWebNovel                         <2e-16 ***
+ti(par_sentiment_roll_51,percentage_index):sourceQidian    <2e-16 ***
+ti(par_sentiment_roll_51,percentage_index):sourceWebNovel  <2e-16 ***
+s(bookId)                                                  <2e-16 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+R-sq.(adj) =  0.142   Deviance explained = 14.2%
+-REML = -21698  Scale est. = 0.04775   n = 216960
+
+Method: REML   Optimizer: outer newton
+full convergence after 12 iterations.
+Gradient range [-8.798801e-06,7.585437e-06]
+(score -21697.54 & scale 0.04774958).
+Hessian positive definite, eigenvalue range [0.7825206,108476].
+Model rank =  160 / 160 
+
+Basis dimension (k) checking results. Low p-value (k-index<1) may
+indicate that k is too low, especially if edf is close to k'.
+
+                                                             k'   edf k-index
+s(par_sentiment_roll_51):sourceQidian                      9.00  8.56    0.99
+s(par_sentiment_roll_51):sourceWebNovel                    9.00  7.07    0.99
+s(percentage_index):sourceQidian                           9.00  8.86    0.98
+s(percentage_index):sourceWebNovel                         9.00  8.94    0.98
+ti(par_sentiment_roll_51,percentage_index):sourceQidian   16.00 14.20    0.95
+ti(par_sentiment_roll_51,percentage_index):sourceWebNovel 16.00 14.08    0.95
+s(bookId)                                                 90.00 87.69      NA
+                                                          p-value    
+s(par_sentiment_roll_51):sourceQidian                        0.25    
+s(par_sentiment_roll_51):sourceWebNovel                      0.21    
+s(percentage_index):sourceQidian                             0.10    
+s(percentage_index):sourceWebNovel                           0.13    
+ti(par_sentiment_roll_51,percentage_index):sourceQidian    <2e-16 ***
+ti(par_sentiment_roll_51,percentage_index):sourceWebNovel  <2e-16 ***
+s(bookId)                                                      NA    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
