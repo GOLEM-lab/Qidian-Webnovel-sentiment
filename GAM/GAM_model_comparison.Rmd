@@ -1,0 +1,463 @@
+---
+title: "GAM Model Comparison"
+---
+
+## GAM Model Comparison
+
+We run the statistical modeling on a HPC, since complex GAM models may require a long time if run on low RAM. The results are copied below each cell.
+
+```{r message=FALSE}
+library(mgcv) # for the GAM model
+library(itsadug) # for comparing the GAM models
+```
+
+```{r}
+long_df_roll <- read_csv("data/long_combined_qidian_webnovel_paragraphs_comments_sentiment.csv")
+
+long_df_roll$bookId <- as.factor(long_df_roll$bookId)
+long_df_roll$source <- as.factor(long_df_roll$source)
+```
+
+Let's start with the simplest model. This is equivalent to a linear regression, because we're not adding any smooth.
+
+```{r}
+mod0 <- gam(comm_sentiment_roll_51 ~ par_sentiment_roll_51,
+          data = long_df_roll, method = "ML")
+
+summary(mod0)
+```
+
+| Term                  | Estimate   | Std. Error | t value | Pr(\>          |
+|-----------------------|------------|------------|---------|----------------|
+| (Intercept)           | -0.0495694 | 0.0006202  | -79.92  | \<2e-16 \*\*\* |
+| par_sentiment_roll_51 | 0.0508304  | 0.0025103  | 20.25   | \<2e-16 \*\*\* |
+
+-   R-sq.(adj) = 0.00188, Deviance explained = 0.189%
+-   ML = -5741.8, n = 216960
+
+`paragraph_sentiment` is significantly associated with `comment_sentiment`, explaining 0.19% of its variance (R-sq = 0.0019).
+
+Now let's try with a nonlinear fitting.
+
+### Model 1: Paragraph sentiment only
+
+```{r}
+mod1 <- gam(comm_sentiment_roll_51 ~ s(par_sentiment_roll_51),
+            data = long_df_roll, method = "ML")
+
+summary(mod1)
+```
+
+| Term                     | edf  | Ref.df | F     | p-value        |
+|--------------------------|------|--------|-------|----------------|
+| s(par_sentiment_roll_51) | 8.66 | 8.961  | 175.1 | \<2e-16 \*\*\* |
+
+-   R-sq.(adj) = 0.00719, Deviance explained = 0.723%
+-   ML = -6299, n = 216960
+
+------------------------------------------------------------------------
+
+The R-sq improved (0.007), so the nonlinear fitting is able to better explain the association between the two variables.
+
+Now let's test the hypothesis that the progression of `paragraph_sentiment` matters to predict `comment_sentiment`. We start by including a second nonlinear predictor.
+
+### Model 2: + Story progression (additive)
+
+```{r}
+mod2 <- gam(comm_sentiment_roll_51 ~ s(par_sentiment_roll_51) 
+            + s(percentage_index),
+            data = long_df_roll, method = "ML")
+            
+summary(mod2)
+```
+
+| Term                     | edf   | Ref.df | F     | p-value        |
+|--------------------------|-------|--------|-------|----------------|
+| s(par_sentiment_roll_51) | 8.627 | 8.954  | 181.9 | \<2e-16 \*\*\* |
+| s(percentage_index)      | 8.949 | 8.999  | 244.2 | \<2e-16 \*\*\* |
+
+-   R-sq.(adj) = 0.0171, Deviance explained = 1.72%
+-   ML = -7361.3, n = 216960
+
+------------------------------------------------------------------------
+
+The model has a higher R-sq (0.017), so this tells us that the progression of the story (`percentage_index`) goes in parallel with significantly different values of `comment_sentiment`, but we don't know if this variation is actually related to the variation of `paragraph_sentiment`. Now let's test the interaction between `paragraph_sentiment` and the progression of the story (`percentage_index`).
+
+### Model 3: + Sentiment × progression interaction
+
+```{r}
+mod3 <- gam(comm_sentiment_roll_51 ~ s(par_sentiment_roll_51) 
+            + s(percentage_index) 
+            + ti(par_sentiment_roll_51, percentage_index),
+            data = long_df_roll, method = "ML")
+
+summary(mod3)
+```
+
+| Term | edf | Ref.df | F | p-value |
+|--------------|--------------|---------------|--------------|-----------------|
+| s(par_sentiment_roll_51) | 8.681 | 8.966 | 157.22 | \<2e-16 \*\*\* |
+| s(percentage_index) | 8.946 | 8.999 | 229.28 | \<2e-16 \*\*\* |
+| ti(par_sentiment_roll_51, percentage_index) | 15.386 | 15.890 | 50.91 | \<2e-16 \*\*\* |
+
+-   R-sq.(adj) = 0.0208, Deviance explained = 2.09%
+-   ML = -7721.2, n = 216960
+
+------------------------------------------------------------------------
+
+R-sq improved again (0.021).
+
+So far we haven't taken into account the fact that the data are coming from two different platforms, with two different user bases. We need to include `source` in the model to be more accurate. Since we want to allow different intercepts by `source`, we need to include it as a fixed effect as well. Let's proceed step-by-step and add only the fixed effect first.
+
+### Model 4: + Source (intercept only)
+
+```{r}
+mod4 <- gam(comm_sentiment_roll_51 ~ source 
+            + s(par_sentiment_roll_51) 
+            + s(percentage_index) 
+            + ti(par_sentiment_roll_51, percentage_index),
+            data = long_df_roll, method = "ML")
+
+summary(mod4)
+```
+
+**Parametric coefficients:**
+
+| Term           | Estimate | Std. Error | t value | p-value        |
+|----------------|----------|------------|---------|----------------|
+| (Intercept)    | -0.0590  | 0.0007     | -79.17  | \<2e-16 \*\*\* |
+| sourceWebNovel | 0.0331   | 0.0011     | 30.15   | \<2e-16 \*\*\* |
+
+| Smooth term | edf | Ref.df | F | p-value |
+|-------------------|-------------|-------------|-------------|-------------|
+| s(par_sentiment_roll_51) | 8.682 | 8.966 | 164.35 | \<2e-16 \*\*\* |
+| s(percentage_index) | 8.946 | 8.999 | 232.28 | \<2e-16 \*\*\* |
+| ti(par_sentiment_roll_51, percentage_index) | 15.397 | 15.896 | 48.53 | \<2e-16 \*\*\* |
+
+-   R-sq.(adj) = 0.0249, Deviance explained = 2.5%
+-   ML = -8174.7, n = 216960
+
+------------------------------------------------------------------------
+
+R-sq improved again (0.025).
+
+So ,not including `source` was partly hiding the association between `pargraph_sentiment` and `comment_sentiment` because there is some variability in the data across the two platforms. Now let's allow all smooths to vary by source.
+
+### Model 5: + Source-specific smooths
+
+```{r}
+mod5 <- gam(comm_sentiment_roll_51 ~ source 
+            + s(par_sentiment_roll_51, by = source) 
+            + s(percentage_index, by = source) 
+            + ti(par_sentiment_roll_51, percentage_index, by = source),
+            data = long_df_roll, method = "ML")
+
+summary(mod5)
+```
+
+**Parametric coefficients:**
+
+| Term           | Estimate | Std. Error | t value | p-value        |
+|----------------|----------|------------|---------|----------------|
+| (Intercept)    | -0.0601  | 0.0008     | -79.13  | \<2e-16 \*\*\* |
+| sourceWebNovel | 0.0298   | 0.0019     | 15.34   | \<2e-16 \*\*\* |
+
+| Smooth term | edf | Ref.df | F | p-value |
+|-------------------|-------------|-------------|-------------|-------------|
+| s(par_sentiment_roll_51):sourceQidian | 8.419 | 8.897 | 228.77 | \<2e-16 \*\*\* |
+| s(par_sentiment_roll_51):sourceWebNovel | 7.463 | 7.956 | 35.84 | \<2e-16 \*\*\* |
+| s(percentage_index):sourceQidian | 8.867 | 8.994 | 106.35 | \<2e-16 \*\*\* |
+| s(percentage_index):sourceWebNovel | 8.939 | 8.996 | 76.57 | \<2e-16 \*\*\* |
+| ti(par_sentiment_roll_51, percentage_index):sourceQidian | 14.424 | 15.371 | 45.77 | \<2e-16 \*\*\* |
+| ti(par_sentiment_roll_51, percentage_index):sourceWebNovel | 14.783 | 15.487 | 35.45 | \<2e-16 \*\*\* |
+
+-   R-sq.(adj) = 0.0341, Deviance explained = 3.44%
+-   ML = -9123.9, n = 216960
+
+------------------------------------------------------------------------
+
+R-sq improved again (0.034).
+
+So, the nonlinear association between `pargraph_sentiment` and `comment_sentiment` is different on the two platforms. Now let's see if individual stories also have their specific baseline variation in `comment_sentiment`.
+
+### Model 6: + Random intercept per book
+
+```{r}
+mod6 <- gam(comm_sentiment_roll_51 ~ source 
+            + s(par_sentiment_roll_51, by = source) 
+            + s(percentage_index, by = source) 
+            + ti(par_sentiment_roll_51, percentage_index, by = source) 
+            + s(bookId, bs = "re"),
+            data = long_df_roll, method = "ML")
+
+summary(mod6)
+```
+
+**Parametric coefficients:**
+
+| Term           | Estimate | Std. Error | t value | p-value         |
+|----------------|----------|------------|---------|-----------------|
+| (Intercept)    | -0.0637  | 0.0104     | -6.098  | 1.07e-09 \*\*\* |
+| sourceWebNovel | 0.0289   | 0.0017     | 17.078  | \<2e-16 \*\*\*  |
+
+| Smooth term | edf | Ref.df | F | p-value |
+|-------------------|-------------|-------------|-------------|-------------|
+| s(par_sentiment_roll_51):sourceQidian | 8.545 | 8.935 | 161.86 | \<2e-16 \*\*\* |
+| s(par_sentiment_roll_51):sourceWebNovel | 6.900 | 7.425 | 25.96 | \<2e-16 \*\*\* |
+| s(percentage_index):sourceQidian | 8.860 | 8.994 | 71.43 | \<2e-16 \*\*\* |
+| s(percentage_index):sourceWebNovel | 8.936 | 8.997 | 91.31 | \<2e-16 \*\*\* |
+| ti(par_sentiment_roll_51, percentage_index):sourceQidian | 14.181 | 15.170 | 43.38 | \<2e-16 \*\*\* |
+| ti(par_sentiment_roll_51, percentage_index):sourceWebNovel | 13.862 | 14.648 | 34.62 | \<2e-16 \*\*\* |
+| s(bookId) | 87.676 | 89.000 | 306.30 | \<2e-16 \*\*\* |
+
+-   R-sq.(adj) = 0.142, Deviance explained = 14.2%
+-   ML = -21717, n = 216960
+
+------------------------------------------------------------------------
+
+R-sq jumped from 0.03 to 0.14. That's a huge improvement. The reason is that `s(bookId)` consumes 87.7 edf. With 90 books, this means that almost each book has a distinct baseline.
+
+This means between-book differences in comment sentiment are substantial and dominate over between-platform differences.
+
+Let's do some model checks before refitting the final model with `REML` to be more robust by adding a stronger penalization to the smooths.
+
+### Basis dimension check (Model 6)
+
+```{r}
+gam.check(mod6)
+```
+
+| Term | k' | edf | k-index | p-value |
+|--------------|--------------|--------------|---------------|---------------|
+| s(par_sentiment_roll_51):sourceQidian | 9.00 | 8.55 | 0.99 | 0.34 |
+| s(par_sentiment_roll_51):sourceWebNovel | 9.00 | 6.90 | 0.99 | 0.35 |
+| s(percentage_index):sourceQidian | 9.00 | 8.86 | 0.95 | \<2e-16 \*\*\* |
+| s(percentage_index):sourceWebNovel | 9.00 | 8.94 | 0.95 | \<2e-16 \*\*\* |
+| ti(par_sentiment_roll_51, percentage_index):sourceQidian | 16.00 | 14.18 | 0.97 | 0.02 \* |
+| ti(par_sentiment_roll_51, percentage_index):sourceWebNovel | 16.00 | 13.86 | 0.97 | \<2e-16 \*\*\* |
+
+------------------------------------------------------------------------
+
+The `s(par_sentiment_roll_51)` terms are fine (p \> 0.3, edf well below k'). The `s(percentage_index)` and `ti()` terms have alow p-value, but the k-index values (0.95–0.97) are close to 1, so the flexibility of the smooths is acceptable.
+
+### Model comparisons (ML scores)
+
+| Comparison | Model A (Score) | Model B (Score) | Difference | Df | p-value | AIC diff |
+|-----------|-----------|-----------|-----------|-----------|-----------|-----------|
+| mod1 → mod2 | -6299.0 | -7361.3 | 1062.3 | 2 | \<2e-16 \*\*\* | 2170.87 |
+| mod2 → mod3 | -7361.3 | -7721.2 | 359.9 | 3 | \<2e-16 \*\*\* | 797.80 |
+| mod3 → mod4 | -7721.2 | -8174.7 | 453.5 | 1 | \<2e-16 \*\*\* | 905.17 |
+| mod4 → mod5 | -8174.7 | -9123.9 | 949.2 | 7 | \<2e-16 \*\*\* | 2030.36 |
+| mod5 → mod6 | -9123.9 | -21717.0 | 12593.2 | 1 | \<2e-16 \*\*\* | 25547.79 |
+
+This conferms that `mod6` has the strongest explanatory power (lowest AIC).
+
+Now let's refit it with `REML` and use the predicted values for the visualizations.
+
+### Refitting final model with REML
+
+```{r}
+mod_final <- gam(
+  comm_sentiment_roll_51 ~ source 
+    + s(par_sentiment_roll_51, by = source) 
+    + s(percentage_index, by = source) 
+    + ti(par_sentiment_roll_51, percentage_index, by = source) 
+    + s(bookId, bs = "re"),
+  data = long_df_roll, method = "REML"
+)
+
+summary(mod_final)
+```
+
+**Parametric coefficients:**
+
+| Term           | Estimate  | Std. Error | t value | p-value         |
+|----------------|-----------|------------|---------|-----------------|
+| (Intercept)    | -0.063667 | 0.010498   | -6.065  | 1.32e-09 \*\*\* |
+| sourceWebNovel | 0.028899  | 0.001739   | 16.620  | \< 2e-16 \*\*\* |
+
+| Smooth term | edf | Ref.df | F | p-value |
+|-------------------|-------------|-------------|-------------|-------------|
+| s(par_sentiment_roll_51):sourceQidian | 8.555 | 8.938 | 161.76 | \<2e-16 \*\*\* |
+| s(par_sentiment_roll_51):sourceWebNovel | 7.066 | 7.576 | 26.14 | \<2e-16 \*\*\* |
+| s(percentage_index):sourceQidian | 8.860 | 8.994 | 71.44 | \<2e-16 \*\*\* |
+| s(percentage_index):sourceWebNovel | 8.935 | 8.997 | 90.52 | \<2e-16 \*\*\* |
+| ti(par_sentiment_roll_51, percentage_index):sourceQidian | 14.204 | 15.184 | 43.36 | \<2e-16 \*\*\* |
+| ti(par_sentiment_roll_51, percentage_index):sourceWebNovel | 14.079 | 14.824 | 34.61 | \<2e-16 \*\*\* |
+| s(bookId) | 87.690 | 89.000 | 306.29 | \<2e-16 \*\*\* |
+
+-   R-sq.(adj) = 0.142, Deviance explained = 14.2%
+-   ML = -21698, n = 216960
+
+```{r}
+gam.check(mod_final)
+```
+
+| Term | k' | edf | k-index | p-value |
+|--------------|--------------|--------------|---------------|---------------|
+| s(par_sentiment_roll_51):sourceQidian | 9.00 | 8.56 | 0.99 | 0.25 |
+| s(par_sentiment_roll_51):sourceWebNovel | 9.00 | 7.07 | 0.99 | 0.21 |
+| s(percentage_index):sourceQidian | 9.00 | 8.86 | 0.98 | \<2e-16 \*\*\* |
+| s(percentage_index):sourceWebNovel | 9.00 | 8.94 | 0.98 | \<2e-16 \*\*\* |
+| ti(par_sentiment_roll_51, percentage_index):sourceQidian | 16.00 | 14.20 | 0.95 | 0.02 \* |
+| ti(par_sentiment_roll_51, percentage_index):sourceWebNovel | 16.00 | 14.08 | 0.95 | \<2e-16 \*\*\* |
+
+## Visualizations
+
+A line plot is the most intuitive way to show the effect of `paragraph_sentiment` on `comment_sentiment` over the progression of the book, but the best way to visualize that it's by comparing the different effect of positive, neutral, and negative sentences. So, let's create a new variable to code `paragraph_sentiment` into three bins, even though this is a simplification. We're creating a new dataset (`pred_grid`) with variables like `percentage_index`, `source`, and `par_sentiment_roll_51`, which match the model’s predictors. This allows us to generate predicted values for combinations of these variables not necessarily in the original training data. This is useful for visualization and model interpretation.
+
+```{r}
+# Representative values from observed distribution
+quants <- c("Negative" = -0.1, "Neutral" = 0.0, "Positive" = 0.3)
+
+pred_grid <- expand.grid(
+  percentage_index = seq(
+    min(long_df_roll$percentage_index, na.rm = TRUE),
+    max(long_df_roll$percentage_index, na.rm = TRUE),
+    length.out = 200
+  ),
+  source = unique(long_df_roll$source),
+  par_sentiment_roll_51 = quants,
+  bookId = long_df_roll$bookId[1]  # placeholder, excluded from prediction
+)
+
+pred_grid$sentiment_level <- factor(
+  rep(names(quants), each = nrow(pred_grid) / 3),
+  levels = c("Negative", "Neutral", "Positive")
+)
+
+preds <- predict(mod_final, newdata = pred_grid, 
+                 exclude = "s(bookId)", se.fit = TRUE)
+
+pred_grid$fit <- preds$fit
+pred_grid$se <- preds$se.fit
+pred_grid$lower <- preds$fit - 1.96 * preds$se.fit
+pred_grid$upper <- preds$fit + 1.96 * preds$se.fit
+
+```
+
+```{r}
+pred_grid |>
+  ggplot(aes(x = percentage_index, y = fit, color = sentiment_level, fill = sentiment_level)) +
+  geom_ribbon(aes(ymin = lower, ymax = upper), alpha = 0.2, color = NA) +
+  geom_line(linewidth = 1) +
+  facet_wrap(~ source) +
+  labs(
+    title = "GAM Predictions with 95% Confidence Intervals",
+    x = "Paragraph Index",
+    y = "Predicted Comment Sentiment (roll 51)",
+    color = "Paragraph sentiment",
+    fill = "Paragraph sentiment"
+  ) +
+  scale_color_manual(values = c("Negative" = "#1E88E5",
+                              "Neutral" = "#FDB863",
+                              "Positive" = "#D73027")) +
+  scale_fill_manual(values = c("Negative" = "#1E88E5",
+                              "Neutral" = "#FDB863",
+                              "Positive" = "#D73027")) +
+  scale_x_continuous(labels = function(x) paste0(x, "%")) +
+  theme_minimal() +
+  theme(legend.position = "bottom",
+        panel.background = element_rect(fill = "white", color = NA),
+        plot.background = element_rect(fill = "white", color = NA))
+
+ggsave("figures/GAM_predictions.png", width = 10, height = 5)
+```
+
+Let's plot the predicted values alongside the observed ones.
+
+```{r}
+# --- Compute observed means per sentiment bin and source ---
+long_df_roll <- long_df_roll |>
+  mutate(sentiment_level = case_when(
+    par_sentiment_roll_51 < -0.05 ~ "Negative",
+    par_sentiment_roll_51 <= 0.05 ~ "Neutral",
+    TRUE ~ "Positive"
+  ) |> factor(levels = c("Negative", "Neutral", "Positive")))
+
+# Bin percentage_index for smoothing observed data
+long_df_roll <- long_df_roll |>
+  mutate(pct_bin = round(percentage_index * 2) / 2)
+
+observed_means <- long_df_roll |>
+  filter(!is.na(comm_sentiment_roll_51), !is.na(sentiment_level)) |>
+  group_by(source, sentiment_level, pct_bin) |>
+  summarise(
+    mean_comm = mean(comm_sentiment_roll_51, na.rm = TRUE),
+    se = sd(comm_sentiment_roll_51, na.rm = TRUE) / sqrt(n()),
+    lower = mean_comm - 1.96 * se,
+    upper = mean_comm + 1.96 * se,
+    .groups = "drop"
+  )
+```
+
+```{r}
+library(patchwork)
+
+# --- Common styling ---
+color_palette <- c("Negative" = "#4A90D9", "Neutral" = "#E8A838", "Positive" = "#D94A4A")
+
+common_theme <- theme_minimal() +
+  theme(
+    legend.position = "none",
+    plot.title = element_text(face = "bold", size = 11),
+    plot.subtitle = element_text(size = 9),
+    axis.title = element_text(size = 10),
+    axis.text = element_text(size = 9),
+    panel.grid.minor = element_blank(),
+    panel.background = element_rect(fill = "white", color = NA),
+    plot.background = element_rect(fill = "white", color = NA)
+  )
+
+# --- Panel A: Observed ---
+p_obs <- ggplot(observed_means,
+                aes(x = pct_bin, y = mean_comm,
+                    color = sentiment_level, fill = sentiment_level)) +
+  geom_ribbon(aes(ymin = lower, ymax = upper), alpha = 0.1, color = NA) +
+  geom_line(linewidth = 0.5) +
+  facet_wrap(~ source) +
+  scale_color_manual(values = color_palette) +
+  scale_fill_manual(values = color_palette) +
+  scale_x_continuous(labels = function(x) paste0(x, "%")) +
+  labs(
+    title = "A. Observed Comment Sentiment",
+    subtitle = "Binned means with 95% CIs",
+    x = "Story progression",
+    y = "Comment sentiment (roll 51)"
+  ) +
+  common_theme
+
+# --- Panel B: Predicted ---
+p_pred <- ggplot(pred_grid,
+                 aes(x = percentage_index, y = fit,
+                     color = sentiment_level, fill = sentiment_level)) +
+  geom_ribbon(aes(ymin = lower, ymax = upper), alpha = 0.1, color = NA) +
+  geom_line(linewidth = 0.5) +
+  facet_wrap(~ source) +
+  scale_color_manual(values = color_palette) +
+  scale_fill_manual(values = color_palette) +
+  scale_x_continuous(labels = function(x) paste0(x, "%")) +
+  labs(
+    title = "B. GAM-Predicted Comment Sentiment",
+    subtitle = "Predictions at representative paragraph sentiment values",
+    x = "Story progression",
+    y = "Comment sentiment (roll 51)"
+  ) +
+  common_theme
+
+# --- Combine ---
+combined <- (p_obs / p_pred) +
+  plot_layout(guides = "collect") &
+  theme(legend.position = "bottom")
+
+combined <- combined +
+  plot_annotation(
+    caption = "Note: Shaded areas represent 95% CIs. GAM predictions exclude book-level random effects.",
+    theme = theme(
+      plot.caption = element_text(size = 9, hjust = 0, face = "italic")
+    )
+  )
+
+ggsave("figures/observed_vs_predicted.png", combined,
+       width = 12, height = 10, dpi = 300)
+```
