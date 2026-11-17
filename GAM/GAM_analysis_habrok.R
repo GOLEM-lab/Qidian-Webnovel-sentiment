@@ -9,8 +9,7 @@
 # The valence x progression interaction ti(par_valence, percentage_index,
 # by = source) IS the research question -- does the paragraph -> comment
 # valence coupling change over the story? It is RETAINED in every model. Its
-# significance and concurvity are reported; no AIC or parsimony gate is ever
-# allowed to delete it.
+# significance and concurvity are reported.
 #
 #   Part A  nested build-up (ML, compareML), descriptive only
 #   Part B  refinement (fREML, discrete): AR(1), book structure, weighting
@@ -18,24 +17,6 @@
 #   Part D  diagnostics
 #   Part E  linear mixed-model comparison (lme4)
 #   Part F  figures
-#
-# UPDATED FOR THE 2026-09-06 DATA PREPARATION
-# -------------------------------------------
-# * Input moved to september-data/ and the row count changed: the story table
-#   is now the WebNovel paragraph count of the verified segmentation rather
-#   than the union of two positional indexes.
-# * `zh_text_missing` is gone. The scrape-failure sensitivity now keys on
-#   `zh_missing` (no Chinese for that paragraph) and `zh_status`.
-# * NEW and important: `comm_anchor`. Qidian comments are anchored to
-#   paragraphs through a recovered segmentId -> paragraph mapping. It is exact
-#   for the 58 books that keep the publisher's U+3000 indent (comm_anchor = 1)
-#   and a proportional approximation for the 49 glued ones (comm_anchor = 0,
-#   median error 0 paragraphs, 84% within one). Part C refits on
-#   comm_anchor == 1 alone; if the ti() terms hold, the approximation is not
-#   driving the result and one sentence in the paper covers it.
-# * The prediction grid no longer hard-codes the book-smooth labels to
-#   exclude. They are read off the fitted model, so this does not silently
-#   break when a different book structure wins the AIC comparison.
 #
 # Usage (Habrok):  sbatch GAM/gam_job.sh
 # Usage (local):   Rscript GAM/GAM_analysis_habrok.R
@@ -65,15 +46,15 @@ first_existing <- function(...) {
 DATA <- Sys.getenv("GAM_DATA")
 if (!nzchar(DATA)) {
   DATA <- first_existing(
-    "september-data/long_combined_qidian_webnovel_paragraphs_comments_sentiment.csv",
-    "../september-data/long_combined_qidian_webnovel_paragraphs_comments_sentiment.csv",
+    "data/long_combined_qidian_webnovel_paragraphs_comments_sentiment.csv",
+    "../data/long_combined_qidian_webnovel_paragraphs_comments_sentiment.csv",
     # the file copied next to the script, as the Habrok job used to expect
     "long_combined_qidian_webnovel_paragraphs_comments_sentiment.csv"
   )
 }
 if (is.null(DATA) || !file.exists(DATA)) {
   stop("long table not found. Set GAM_DATA to ",
-       "september-data/long_combined_qidian_webnovel_paragraphs_comments_sentiment.csv")
+       "data/long_combined_qidian_webnovel_paragraphs_comments_sentiment.csv")
 }
 
 OUT <- Sys.getenv("GAM_OUT", unset = if (dir.exists("GAM")) "GAM" else ".")
@@ -260,12 +241,14 @@ sens$raw_weights <- fit_weighted(model_df, model_df$comm_count, "mod_final_raww"
 
 # C2. Exact comment anchors only.
 #
-# The Qidian side reaches paragraphs through the recovered segmentId ->
-# paragraph mapping. For the 58 books keeping the U+3000 indent that link is
-# exact; for the 49 glued books it is proportional (median error 0 paragraphs,
-# 84% within one, 93% within two). Refitting on the exact subset alone is the
-# test of whether the approximation matters. If the ti() rows barely move, it
-# does not.
+# Qidian records a comment's position as an index into Qidian's own paragraph
+# division, which the re-segmentation to the English paragraph structure does
+# not preserve. In the 58 books whose scrape kept the publisher's U+3000
+# indentation those boundaries survive and the anchor is exact; the other 49
+# arrived as one unbroken string with no boundaries left, so their anchors are
+# placed proportionally (median error 0 paragraphs, 84% within one, 93% within
+# two). Refitting on the exact subset alone is the test of whether the
+# approximation matters. If the ti() rows barely move, it does not.
 if (has_anchor) {
   df_exact <- model_df %>% filter(comm_anchor == 1) %>%
     arrange(bookId, new_index) %>% droplevels()
@@ -281,14 +264,14 @@ if (has_anchor) {
     cat("subset too small to refit; skipped\n")
   }
 } else {
-  cat("\nNOTE: no `comm_anchor` column. Regenerate the long table with\n",
-      "scripts/data-preapration20260906.Rmd to enable the anchor sensitivity.\n",
+  cat("\nNOTE: no `comm_anchor` column. Regenerate the long table.\n",
       sep = "")
 }
 
 # C3. Paragraphs with no Chinese text.
 #
-# Where the segmenter found no Chinese, the Qidian row carries no par_valence
+# Where the segmenter found no Chinese paragraphs for the English translation,
+# the Qidian row carries no par_valence
 # and is already gone from model_df; what remains is the WebNovel half of
 # those paragraphs. Dropping them tests whether the unpaired English stretches
 # pull the WebNovel curve. Ordinary unpaired rows -- one platform's readers
@@ -338,8 +321,8 @@ print(concurvity(mod_final, full = FALSE)$estimate)
 cat("\n\n########## Part E: linear mixed model ##########\n")
 # Linear analogue: fixed interactions replace the smooths and ti,
 # (1 + par_valence | bookId) replaces the book smooths. Same log1p weights.
-# CAVEAT: the GAM also carries an AR(1) working correlation and the two
-# likelihoods come from different machinery -- read R2/RMSE, not the AIC.
+# Note: the GAM also has an AR(1) working correlation and the two
+# likelihoods come from different model structures, so read R2/RMSE, not the AIC.
 mod_final_linear <- lmer(
   avg_comm_valence ~ source * par_valence * percentage_index
     + (1 + par_valence | bookId),
@@ -356,8 +339,7 @@ print(compare_performance(mod_final_linear, mod_final))
 cat("\n\n########## Part F: figures ##########\n")
 
 # Book-level terms to exclude for population-level prediction, read off the
-# fitted model rather than hard-coded: their labels depend on which structure
-# won in B2, and a stale literal would silently predict the wrong thing.
+# fitted model: their labels depend on which structure won in B2.
 book_terms <- Filter(function(l) grepl("bookId", l),
                      vapply(mod_final$smooth, function(s) s$label, character(1)))
 cat("excluding book-level terms:", paste(book_terms, collapse = ", "), "\n")
