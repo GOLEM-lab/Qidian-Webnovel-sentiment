@@ -1,0 +1,94 @@
+# .gitignore — added 2026-11-17
+#
+# Rule: this repository tracks what is published on GitHub. Everything else in
+# the working tree is local scratch — derived data, intermediate outputs,
+# backups and editor artefacts — and is ignored here.
+#
+# Files that are ALREADY tracked are unaffected by these patterns. To start
+# tracking something listed below, delete its line, or run:
+#     git add -f <path>
+
+# ---- OS / editor artefacts ------------------------------------------------
+.DS_Store
+._*
+.Rhistory
+.RData
+.Rproj.user/
+*.Rproj
+
+# ---- Python / R build artefacts -------------------------------------------
+__pycache__/
+*.py[cod]
+Rplots.pdf
+*_files/
+*_cache/
+logs/
+
+# ---- Knitted outputs (regenerate from the .Rmd) ---------------------------
+GAM/GAM_model_comparison.html
+
+# ---- Backups and scratch copies -------------------------------------------
+*.bak
+*.bak[0-9]
+*.bak[0-9][0-9]
+*.MINE_DO_NOT_USE.*
+*~
+
+# ---- Large local data, not published --------------------------------------
+# The inference inputs/outputs and the frozen segmentation workspace. These
+# run to several GB; they are reproduced by the scripts, not stored in git.
+september-data/
+extra_files/
+data/segmentation/
+data/evaluation/
+data/verification_*/
+
+# ---- Working data files in data/ (not in the online repo) -----------------
+data/alignment_discrepancies.csv
+data/ALIGNMENT_DISCREPANCIES_README.md
+data/combined_qidian_webnovel_paragraphs_comments_sentiment.csv
+data/qidian_webnovel_alignment.csv
+data/qidian_webnovel_chapters_merge_meta_aligned_with_paragraphs.csv
+data/rescrape_targets.txt
+data/segmentation_hold_report.csv
+data/segmentation_rebuild_report.csv
+data/segmentation_rebuild_report_cohort2.csv
+data/webnovel_paragraphs_with_qidian.csv
+data/zh_author_note_prefix.csv
+data/zh_chapter_stubs.csv
+data/zh_segmentation_status.csv
+# Platform metadata: removed from the online repo, but the data-preparation
+# Rmd still reads data/webnovelMeta.csv. Restored from git history and kept
+# locally so the pipeline runs; recover with:
+#   git show <commit>^:data/webnovelMeta.csv > data/webnovelMeta.csv
+data/webnovelMeta.csv
+data/qidianMeta.csv
+/combined_story_df_new.csv
+
+# ---- Local-only analysis scripts ------------------------------------------
+# Written during the 2026-09 re-analysis and not yet published. Delete the
+# relevant line to publish one.
+GAM/GAM_local_analysis.R
+GAM/GAM_script_combined.R
+scripts/inference/
+scripts/align_qidian_paragraphs.py
+scripts/build_paragraph_index.py
+scripts/build_segmentation_workspace.py
+scripts/check_against_chapter_meta.py
+scripts/check_segmentation_consistency.py
+scripts/fix_chapter_alignment*.py
+scripts/fix_paragraph_segmentation.py
+scripts/fix_qidian_chapter_csvs_20260906.py
+scripts/map_qidian_segments_to_paragraphs.py
+scripts/merge_recovered_chapters.py
+scripts/prepare_qidian_reviews.py
+scripts/prepare_webnovel_reviews.py
+scripts/rebuild_qidian_segmentation.py
+scripts/resolve_chapter_ids.py
+scripts/segment_qidian_paragraphs.py
+scripts/validate_segmentation.py
+scripts/verify_and_repair_alignment_20260906.py
+scripts/verify_segmentation.py
+scripts/verify_segmentation_deep.py
+scripts/data-preapration2026*.Rmd
+figures/sentiment_model_comparison.tex

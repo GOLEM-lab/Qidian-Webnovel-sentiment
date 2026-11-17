@@ -1,1 +1,11 @@
+# CSVs are stored in Git LFS so large derived tables do not bloat the pack.
 *.csv filter=lfs diff=lfs merge=lfs -text
+
+# These three were committed as ordinary blobs before the LFS rule above
+# existed. Because history holds a plain blob while the rule asks for a
+# pointer, git reports them as modified on every status, forever, even though
+# the working copy is byte-identical to HEAD. Exempting them clears that
+# without rewriting history; new CSVs still go to LFS.
+synthetic_data/syn_data_combined.csv -filter -diff -merge -text
+synthetic_data/syn_data_combined_no_emoji.csv -filter -diff -merge -text
+synthetic_data/synthetic_data_eval/annotator_goldenlabel.csv -filter -diff -merge -text
