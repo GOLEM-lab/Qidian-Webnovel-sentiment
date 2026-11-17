@@ -202,8 +202,7 @@ diagnostics that bound how far individual smooth terms can be interpreted.
 ## Citation
 
 If you use this code or data, please cite the JCLS 2026 paper and the corpus it
-builds on, the Qidian-WebNovel Corpus (Yu et al., 2025), deposited on
-DataverseNL as [doi:10.34894/GQXX3K](https://doi.org/10.34894/GQXX3K).
+builds on, the Qidian-WebNovel Corpus (Yu et al., 2025) [doi:10.5334/johd.368](https://doi.org/10.5334/johd.368).
 
 ## License
 
