@@ -80,6 +80,7 @@ scripts/
   run_inference_webnovel.py         batch sentiment inference over comments and paragraphs
   main_job.sh                       Slurm job running the above on an A100
   requirements.txt                  Python dependencies
+  install_r_packages.R              pinned R package versions (see R environment)
 GAM/
   GAM_analysis_habrok.R             the full statistical analysis, one script
   gam_job.sh                        Slurm job running the above
@@ -196,6 +197,48 @@ every model rather than being subjected to a selection step.
 
 `GAM_Model_Comparison.pdf` reports the results, including the concurvity
 diagnostics that bound how far individual smooth terms can be interpreted.
+
+### R environment
+
+The analysis ran under **R 4.5.1** on AlmaLinux 8.10. The exact package
+versions are recorded by `sessionInfo()` at the end of
+`GAM/gam_habrok_output.txt`, which is the authoritative record for the
+published results:
+
+| | |
+|---|---|
+| mgcv 1.9-4 | nlme 3.1-168 |
+| lme4 1.1-38 | Matrix 1.7-4 |
+| itsadug 2.5 | plotfunctions 1.5 |
+| performance 0.15.3 | patchwork 1.3.2 |
+| dplyr 1.1.4 | readr 2.1.6 |
+| ggplot2 4.0.2 | |
+
+This matters more than it might seem: CRAN has since moved lme4 to 2.1-0 and
+performance to 0.19.0, so an unpinned re-run is not the same analysis.
+
+To restore those versions:
+
+```bash
+Rscript scripts/install_r_packages.R --check   # compare against what you have
+Rscript scripts/install_r_packages.R           # install the pinned versions
+```
+
+For a stricter guarantee, including the full transitive dependency set, use
+[renv](https://rstudio.github.io/renv/) from the machine where the analysis
+runs:
+
+```r
+install.packages("renv")
+renv::init(bare = TRUE)   # in the repository root
+renv::hydrate()           # discover packages used by the scripts
+renv::snapshot()          # write renv.lock — commit this file
+```
+
+and on any other machine, `renv::restore()`. Two caveats either way: `mgcv`,
+`nlme` and `Matrix` ship with R, so the R version largely decides them; and
+`lme4` is compiled against `Matrix`'s ABI, so if you rebuild `Matrix` from
+source, rebuild `lme4` too.
 
 ---
 
