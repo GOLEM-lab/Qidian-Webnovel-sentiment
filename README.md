@@ -202,8 +202,7 @@ diagnostics that bound how far individual smooth terms can be interpreted.
 
 The analysis ran under **R 4.5.1** on AlmaLinux 8.10. The exact package
 versions are recorded by `sessionInfo()` at the end of
-`GAM/gam_habrok_output.txt`, which is the authoritative record for the
-published results:
+`GAM/gam_habrok_output.txt`:
 
 | | |
 |---|---|
@@ -214,9 +213,6 @@ published results:
 | dplyr 1.1.4 | readr 2.1.6 |
 | ggplot2 4.0.2 | |
 
-This matters more than it might seem: CRAN has since moved lme4 to 2.1-0 and
-performance to 0.19.0, so an unpinned re-run is not the same analysis.
-
 To restore those versions:
 
 ```bash
@@ -224,21 +220,6 @@ Rscript scripts/install_r_packages.R --check   # compare against what you have
 Rscript scripts/install_r_packages.R           # install the pinned versions
 ```
 
-For a stricter guarantee, including the full transitive dependency set, use
-[renv](https://rstudio.github.io/renv/) from the machine where the analysis
-runs:
-
-```r
-install.packages("renv")
-renv::init(bare = TRUE)   # in the repository root
-renv::hydrate()           # discover packages used by the scripts
-renv::snapshot()          # write renv.lock — commit this file
-```
-
-and on any other machine, `renv::restore()`. Two caveats either way: `mgcv`,
-`nlme` and `Matrix` ship with R, so the R version largely decides them; and
-`lme4` is compiled against `Matrix`'s ABI, so if you rebuild `Matrix` from
-source, rebuild `lme4` too.
 
 ---
 
